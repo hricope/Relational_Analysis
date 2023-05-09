@@ -77,7 +77,7 @@ The main field tags are:
 
 ## Cleaning
 
-We review and clean de merged dataframe. Human review is taken place
+We review and clean the merged dataframe. Human review is taken place
 
 -   Delete all raw whithout author in the field AU (field Tag = AU)
 -   Delete duplicated raws: "JUNG D;DORNER V;GLASER F;MORANA
