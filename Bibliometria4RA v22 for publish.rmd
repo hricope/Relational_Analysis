@@ -96,7 +96,7 @@ noAU_Rows<-which(w_sDF$AU=="NA N")
 w_sDF<-w_sDF[-c(noAU_Rows),]
 
  # find duplicated indexes
-dupDocs<-which(w_sDF$AU=="RHR A;BERGER B;HESS T") #,"ALTUNTAS Y;KOCAMAZ A;ULKGUN A","SLAUGHTER K;CHEN D")
+dupDocs<-which(w_sDF$AU=="RHR A;BERGER B;HESS T") 
 
 # delete duplicated Reference
 w_sDF<-w_sDF[-c(dupDocs),] 
@@ -187,13 +187,13 @@ etc.) of a bibliographic data frame.
 
 ## Building the  RA_STOPWORDS
 
-### 1ª extraction of keywords
+### 1- extraction of keywords
 
 we make a first extraction of the keywords from the tags TI,DE,AB to build with this list of words the stopwords and the thesaurus manually.
 
 Step 1. Extraction of raw terms: Using the function termExtraction of the package bibliometrix, we extract from the AB and the DE a list of relevant keywords about RA, which we will call throughout this work as RA-K. Compound terms have been extracted from up to a maximum of 3 simple words (ngrams = 1 to 3). 
 
-Step 2. Creation of RA-stopwords: When a bibliometric analysis based on keywords is carried out, having these stopwords in the preprocessing phase helps to obtain more focused results on the research topic, since all those words that they have no meaning relevant to the study. Consideration of this list allows greater visibility to be given to those terms that really add value and meaning to the subject being discussed. Thus, from the total of terms extracted in step 1, 1598 words or concepts have been obtained that were considered irrelevant for the analysis on RA  . Along with the stopwords that come by default in the bibliometrix package, all possible combinations of the terms Robo + Advi * have been included, since it is the initial query with which the database was obtained. The names of authors and countries have also been considered stopwords, since the analysis of both concepts has been carried out in the previous section.
+Step 2. Creation of RA-stopwords: When a bibliometric analysis based on keywords is carried out, having these stopwords in the preprocessing phase helps to obtain more focused results on the research topic, since all those words that they have no relevant meaning to the study. Considerating of this list allows greater visibility to be given to those terms that really add value and meaning to the subject being discussed. Thus, from the total of terms extracted in step 1, 1598 words or concepts have been obtained that were considered irrelevant for the analysis on RA  . Along with the stopwords that come by default in the bibliometrix package, all possible combinations of the terms Robo + Advi * have been included, since it is the initial query with which the database was obtained. The names of authors and countries have also been considered stopwords, since the analysis of both concepts has been carried out in the previous section.
 
 ```{r raw term extraction from DE , AB tags}
 
@@ -212,7 +212,7 @@ DE_TermsDF <- as.data.frame(DE_Terms)
 DE_TermsDF <-  DE_TermsDF[DE_TermsDF$Var1!="NA",]
 
 # export to csv
-write.csv2(DE_TermsDF,file="C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/DE_Terms.csv")
+write.csv2(DE_TermsDF,file="your path/DE_Terms.csv")
 
 # extract list of terms into the tag "AB" and differente ngrams. ngrams = 1 to 3
 AB_Rawn1 <- termExtraction(myDF,Field="AB",ngrams = 1, remove.terms = sw)
@@ -240,19 +240,19 @@ Term_Raw2<- rbind(DE_TermsDF,AB_Rawn1DF,AB_Rawn2DF)
 
 #export to csv to manually build the RA Stopwords
 
-write.csv2(Term_Raw,file="C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/Raw_Terms.csv")
+write.csv2(Term_Raw,file="your path/Raw_Terms.csv")
 
 ```
 
 
 ## Remove words
 
-. Building the final stopwrod list. RA_Stopwords.xlsx is the RA_Stopwords list built manually.
+. Building the final stopword list. RA_Stopwords.xlsx is the RA_Stopwords list built manually.
 
 ```{r remove words, include=FALSE}
 
 sw <- stopwords("english") 
-RA_Stopwords <- read_excel("C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/RA_Stopwords.xlsx",  sheet = "Stopwords")
+RA_Stopwords <- read_excel("your path/RA_Stopwords.xlsx",  sheet = "Stopwords")
 
 RA_Stopwords <- c(RA_Stopwords$StopWords) # char vector
 # lowe case
@@ -267,46 +267,33 @@ remove.terms <- toupper(remove.terms)
 
 ```
 
-```{r run analysis_TI }
-# TI --run termExtraction()
-
-RA_Keyword_TI <- termExtraction(w_sDF_H,Field="TI",remove.terms = remove.terms)
-TI_Terms <- sort(table(unlist(strsplit(RA_Keyword_TI$TI_TM,split=";"))),decreasing = TRUE)
-TI_TermsDF <- as.data.frame(TI_Terms)
-
-write.csv2(TI_TermsDF,file="C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/TI_Terms.csv")
-```
-
 
 DE --run termExtraction()
 
-para poder analizar los conceptos del author sustiuimos el espacio entre
-palabras por un "-" para que se pueda\
-analizar como un solo término. los conceptos en DE estan separados por
-";"
+we do a special analysis of the author keywords, repeating the term extraction but with the full removed word list
 
 ```{r run analysis DE}
 myDF <- w_sDF_H
 
-# myDF$DE <- str_replace_all(myDF$DE,("(?<=[:alpha:])\\s"),"-")
+
 
 RA_Keyword_DE <- termExtraction(myDF,Field="DE",remove.terms = remove.terms)
 DE_Terms <- sort(table(unlist(strsplit(RA_Keyword_DE$DE_TM,split=";"))),decreasing = TRUE)
 DE_TermsDF <- as.data.frame(DE_Terms)
 
-# Elimino las filas con "NA", al faltar el campo "DE" en algunos articulos aparecen NA
+# Delete "NA" rows
 DE_TermsDF <-  DE_TermsDF[DE_TermsDF$Var1!="NA",]
 
-# exporto a csv
-write.csv2(DE_TermsDF,file="C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/DE_Terms.csv")
+# export to csv. we will check it manually
+write.csv2(DE_TermsDF,file="your path/DE_Terms.csv")
 
 ```
 
 
-## creación del diccionario de sinonimos
+## building thesaurus
 
 
-preparamos todos los diccionarios de sinonimos, esto nos permite agrupar el output de la función en bloques conceptuales.
+we prepare all the dictionaries of synonyms, this allows us to group the output of the function into conceptual blocks.
 
 - Step 3. Creation of RA-synonyms. This dictionary will facilitate the analysis of the relevance of the different topics covered in the RA research, by allowing all those words that refer to the same topic or concept to be grouped into families. Thus, after obtaining the list of RA-stopwords, all the terms of interest on RA have been extracted from the DE and AB, obtaining a total of 4018 words. Of these, the 471 RA-K have been selected, which are considered to represent all those topics of interest for the analysis of the RA (see Table A2 in the appendix). The RA-K has been grouped into 20 families or conceptual groups that, additionally, have been identified with the different phases of the IAds process, which will allow us to study the relevance of each of these phases in the research collected in the corpus.
 
@@ -319,7 +306,7 @@ the first word of each string row is taken as the main word and the rest of the 
 ```{r Load synonyms, include=FALSE}
 library(readxl)
 
-RA_Sinonimos <- read_excel("C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/RA_sinonimos.xlsx",  sheet = "KeyWd_synonyms")
+RA_Sinonimos <- read_excel("your path/RA_sinonimos.xlsx",  sheet = "KeyWd_synonyms")
 
 
 ```
@@ -416,7 +403,7 @@ AB_TermsRawn2DF <- as.data.frame(AB_TermsRawn2)
 AB_terms.noSin <- rbind(AB_TermsRawn1DF,AB_TermsRawn2DF)
 
 #export to csv, we will use it later with data4bubble and bubble vertices 
-write.csv2(AB_terms.noSin,file="C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/AB_Terms_No_Sin.csv")
+write.csv2(AB_terms.noSin,file="your path/AB_Terms_No_Sin.csv")
 
 
 # Repeat the same work but using the RA_synonyms. we extract terms grouped by synonyms
@@ -435,7 +422,7 @@ AB_TermsDF_n2 <- as.data.frame(AB_Terms_n2)
 AB_TermsDF <- rbind(AB_TermsDF_n1,AB_TermsDF_n2)
 
 #export to csv
-write.csv2(AB_TermsDF,file="C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/AB_Terms.csv")
+write.csv2(AB_TermsDF,file="your path/AB_Terms.csv")
 
 
 ```
@@ -443,7 +430,7 @@ write.csv2(AB_TermsDF,file="C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 
 
 ### wordcloud graphs
 
-We emphasize the relevance of doing the analysis with stopword and synonyms. We focus on the keywords of the abstracts(AB)
+We emphasize the relevance of doing the analysis with stopwords and synonyms. We focus on the keywords of the abstracts(AB)
 
 ```{r wordCloud plot}
 
@@ -473,7 +460,6 @@ wordcloud2(AB_Top_Term_noSin,size = 0.4, minSize = 0.1, gridSize =  0,
     minRotation = -pi/4, maxRotation = pi/4, shuffle = TRUE,
     rotateRatio = 0.4, shape = 'circle', ellipticity = 0.65,
     widgetsize = NULL, figPath = NULL, hoverFunction = NULL)
-
 
 
 
@@ -514,9 +500,9 @@ library(ggrepel)
 
 # to complete this data I have used the output AB_Terms, which has already been filtered with stopwords and synonyms
 
-my_Sinonimos <- read_excel("C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/RA_sinonimos.xlsx",sheet = "Data4Bubble")
+my_Sinonimos <- read_excel("your path/RA_sinonimos.xlsx",sheet = "Data4Bubble")
 
-my_vertices <- read_excel("C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/RA_sinonimos.xlsx",sheet = "BubbleVertices")
+my_vertices <- read_excel("your path/RA_sinonimos.xlsx",sheet = "BubbleVertices")
 
 edges.1 <- my_Sinonimos[,1:2]
 edges.1 <- as.data.frame(edges.1) #convierto a data frame
@@ -540,7 +526,7 @@ my_vertices <- my_vertices %>%
 my_vertices <- my_vertices %>% 
   mutate(new_label_2=ifelse(level==3, Shortname, NA))
 
-# creo el objeto grafico
+# build the graph objet
  mygraph.1 <- graph_from_data_frame( edges.1, vertices=my_vertices )
 
 pp <-  ggraph(mygraph.1, layout = 'circlepack', weight=size) + 
@@ -567,11 +553,11 @@ library(ggraph)
 library(igraph)
 
 
-cluster.family.edges  <- read_excel("C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/RA_sinonimos.xlsx",sheet = "networkGraph")
+cluster.family.edges  <- read_excel("your path/RA_sinonimos.xlsx",sheet = "networkGraph")
 
-cluster.family.vertices  <- read_excel("C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/RA_sinonimos.xlsx",sheet = "netGraphVer")
+cluster.family.vertices  <- read_excel("your path/RA_sinonimos.xlsx",sheet = "netGraphVer")
 
-#definimos el DF que contiene los links
+#defining the data frame containing the links
 cluster.family.edges <- as.data.frame(cluster.family.edges)
 cluster.family.vertices <- as.data.frame(cluster.family.vertices)
 
@@ -579,7 +565,7 @@ cluster.family.vertices <- as.data.frame(cluster.family.vertices)
 #------------------------------------------------------------------------------------------
 
 
-# creo el objeto grafico
+# building the graph object
  mygraph.2 <- graph_from_data_frame( cluster.family.edges, vertices=cluster.family.vertices )
 
 pp <- ggraph(mygraph.2, layout="stress")+
@@ -596,9 +582,9 @@ pp
 ```
 
 
-## cleanning de abstracts no relevantes
+## cleanning no relevant abstracts
 
-after reading the abstracts we realize that some of them are not relevant for the study, for example the paper is a biblimetric analysis so it is just a descriptive analysis of the research. The issues treated in those papers are not included in any the cluster we are focus.
+after reading the abstracts we realize that some of them are not relevant for the study, for example the paper is a biblimetric analysis so it is just a descriptive analysis of the research. The issues treated in those papers are not included in any cluster.
 
 ```{r abstracts cleanning}
 
@@ -608,49 +594,42 @@ w_sDF_ABClean<-w_sDF[-c(noAB_Rows),]
 
 AB_clean <- cbind.data.frame(w_sDF_ABClean$PY,w_sDF_ABClean$TI,w_sDF_ABClean$AU,w_sDF_ABClean$AB)
 
-write_xlsx(AB_clean,"C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/Abstract_clean.xlsx")
+write_xlsx(AB_clean,"your path/Abstract_clean.xlsx")
 ```
-# delete any abstract not included in any cluster objetive
 
-### Preparamos mapa de calor por autores/temas:
 
-basandonos en el excel donde tenemos organizados los AB indicando sobre que
-temas tratan vamos a analizar sobre que temas investigan cada uno de los
-autores individuales, y asi poder hacer un mapa de calor de autores y
-sus temas de investigación. Los temas se basan en los sub cluster que
-hemos creado anteriormente.
+### Buuilding the author/subject heatmap:
 
 ----------------------------------------------------------------------------
-19/07/22- ya esta eliminados los ab sin cluster, iniciar el proceso siguiente
-
-```{r cargo datos y preparo DF}
-# Importamos el data frame desde excel
 
 
-mapa_calor_AU <- read_excel("C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/mapa_calor_AU 210522.xlsx", sheet = "AU_Clust") 
+```{r upload data and build data frame}
+# import from excel
 
-#contamos el numero de campos que tiene al df mapa_calor_AU para saber despues cuantos Temas tenemos
+mapa_calor_AU <- read_excel("your path/mapa_calor_AU 210522.xlsx", sheet = "AU_Clust") 
+
+#we count the number of fields you have in the df map_heat_AU to know how many Themes we have.
 nCamposTemas <- ncol(mapa_calor_AU)
 
 
-# creo el data frame para los AB, las columnas 6-24 es donde esta identificados los temas
+# I create the data frame for the ABs, columns 6-24 is where the topics are identified.
 mapa_calor_AB <- cbind(Id_AB=mapa_calor_AU$id_AB,TI=mapa_calor_AU$TI,mapa_calor_AU[,6:24])
 
-# quitamos el titulo del DF que vamos a graficar
+# remove the title of the DF to be plotted
 myvars <- names(mapa_calor_AB) %in% c("TI")
 data.AB <- mapa_calor_AB[!myvars] 
 
-# sustituyo NA por cero
+# replace NA by zero
 data.AB[is.na(data.AB)] <- 0 
 
 
 
-# 18 temas
+# 18 topics
 data.AB<- data.AB[,2:20] 
 
 
 
-# desde la matriz que contiene todos los datos obtengo los subgrupos de abstracts que tienen un 1 en alguno de los temas incluidos en cada cluster.
+# from the matrix containing all the data I obtain the subgroups of abstracts that have a 1 in one of the topics included in each cluster.
 c.1 <- apply(data.AB[,1:4],1,sum)
 c.2 <- apply(data.AB[,5:8],1,sum)
 c.3 <- data.AB[,9]
@@ -658,35 +637,35 @@ c.4 <- apply(data.AB[,10:14],1,sum)
 c.5 <- apply(data.AB[,15:19],1,sum)
 
 
-# creo nuevas Df ampliadas para cada cluster
+# I create new extended Df for each cluster
 data.AB.c.x <- cbind(data.AB,c.1,c.2,c.3,c.4,c.5)
 
-# creo una nueva columna con la suma de todos los clusters para detectar aquellos AB que no tengan ninguno
+# I create a new column with the sum of all the clusters to detect those ABs that have none
 C.X <- apply(data.AB.c.x[,20:24],1,sum)
 
-# añado la columna al data frame completo
+# add column to the complete data frame
 
 data.AB.c.x <- cbind(data.AB.c.x,C.X)
 
-# elimino aquellas filas cuyo C.X sea igual a cero ya que son abstracts que no estan incluidos en ningun cluster
+# I eliminate those rows whose C.X is equal to zero because they are abstracts that are not included in any cluster.
 
-# creamos el índice
+# indexing
 data.AB.Clean <- which(data.AB.c.x$C.X!=0)
 
-# seleccionamos los datox
-data.AB.c.x <- data.AB.c.x[c(data.AB.Clean),] # este es el DF limpio para trabajar con el a partir de ahora
+# data selection
+data.AB.c.x <- data.AB.c.x[c(data.AB.Clean),] # DF ready to work on it
 
 
 ```
 
-## Graficamos mapa calor AB
+## Heatmap graph
 
 ```{r df para mapa calor AB}
 
 library(bipartite)
 
 
-# cambio a matrix para poder graficar
+# change to matrix
 data.AB.Clean <- as.matrix(data.AB.Clean)
 
 
@@ -711,30 +690,26 @@ heatmap.2(t(data.AB),
       offsetRow = 0
          
         )
-# 
-# myMod.ab <- computeModules(data.AB)
-#       
-# plotModuleWeb(myMod.ab)
+
+
 ```
 
-## Mapa de calor individuales por cluster
+##individual heatmap by cluster
 
-Para poder ver mejor los abstracts que tenemos en cada cluster,
-realizamos un mapa de calor para cada cluster.
 
-```{r heatmap por cluster}
+```{r heatmap by cluster}
 
 
 # -------- cluster 1 -----------------------------------------
 idx.c <- which(data.AB.c.x$c.1>0)
 data.AB.c.1 <- data.AB.c.x[c(idx.c),]
 
-# paso a matrix para usar heatmap.2
+# to matrix ready for heatmap.2
 
 data.AB.c.1 <- as.matrix(data.AB.c.1[,1:19])
 
-# HEATMAP PARA EL C1
-# xtitle
+# HEATMAP C1
+
 
 x_title <- paste(nrow(data.AB.c.1)," abstracts in C1")
 
@@ -760,12 +735,10 @@ x_title <- paste(nrow(data.AB.c.1)," abstracts in C1")
 idx.c <- which(data.AB.c.x$c.2>0)
 data.AB.c.2 <- data.AB.c.x[c(idx.c),]
 
-# paso a matrix para usar heatmap.2
+
 
 data.AB.c.2 <- as.matrix(data.AB.c.2[,1:19])
 
-# HEATMAP PARA EL C2
-# xtitle
 
 x_title <- paste(nrow(data.AB.c.2)," abstracts in C2")
 
@@ -791,12 +764,9 @@ x_title <- paste(nrow(data.AB.c.2)," abstracts in C2")
 idx.c <- which(data.AB.c.x$c.3>0)
 data.AB.c.3 <- data.AB.c.x[c(idx.c),]
 
-# paso a matrix para usar heatmap.2
 
 data.AB.c.3 <- as.matrix(data.AB.c.3[,1:19])
 
-# HEATMAP PARA EL C3
-# xtitle
 
 x_title <- paste(nrow(data.AB.c.3)," abstracts in C3")
 
@@ -822,12 +792,9 @@ x_title <- paste(nrow(data.AB.c.3)," abstracts in C3")
 idx.c <- which(data.AB.c.x$c.4>0)
 data.AB.c.4 <- data.AB.c.x[c(idx.c),]
 
-# paso a matrix para usar heatmap.2
 
 data.AB.c.4 <- as.matrix(data.AB.c.4[,1:19])
 
-# HEATMAP PARA EL C4
-# xtitle
 
 x_title <- paste(nrow(data.AB.c.4)," abstracts in C4")
 
@@ -853,12 +820,9 @@ x_title <- paste(nrow(data.AB.c.4)," abstracts in C4")
 idx.c <- which(data.AB.c.x$c.5>0)
 data.AB.c.5 <- data.AB.c.x[c(idx.c),]
 
-# paso a matrix para usar heatmap.2
 
 data.AB.c.5 <- as.matrix(data.AB.c.5[,1:19])
 
-# HEATMAP PARA EL C5
-# xtitle
 
 x_title <- paste(nrow(data.AB.c.5)," abstracts in C5")
 
@@ -880,59 +844,59 @@ x_title <- paste(nrow(data.AB.c.5)," abstracts in C5")
           )  
 ```
 
-## mapa calor autores
+## Authors heatmap
 
 ```{r mapa calor autores- Datos}
-# creo lista unica de autores desde el dataframe con los abstracts y temas
+# create single author list from the dataframe with abstracts and topics
 listaAU <- str_split(as.character(mapa_calor_AU$AU), ";")
 
-nAU <- lengths(listaAU) # obtengo el numero de autores por AB
-myAU <- unlist(listaAU) # creo el vector de autores
+nAU <- lengths(listaAU) # number of authors per AB
+myAU <- unlist(listaAU) # vector of authors
   
-myAU <- unique(myAU) # creo vector de autores unicos en el corpus
+myAU <- unique(myAU) # single author vector
 
-nUnqAU <- length(myAU) # numero de autores unicos
-
-
-
-# vamos a asignar a cada autor su indice en el cual se identifica en que articulos del DF mapa_calor_AU aparece
-
-nAB <- nrow(mapa_calor_AU) # numero de abstracts
-
-# creo matriz con AU/Temas
-AUThemMtx <- data.frame(mapa_calor_AU[,6:24])# los cuatro primeros campos no los usamos
-
-AUThemMtx[is.na(AUThemMtx)] <- 0 #cambiamos NA por cero para poder sumar las columnas
+nUnqAU <- length(myAU) # number of unique authors
 
 
-# creo una matriz de ceros para ir sumando los reusltados parciales
+
+# we will assign to each author an index in which we will identify in which articles of the DF mapa_calor_AU appears.
+
+nAB <- nrow(mapa_calor_AU) #  abstracts
+
+#  AU/Topics matrix
+AUThemMtx <- data.frame(mapa_calor_AU[,6:24])# lfirst 4 fields are not used
+
+AUThemMtx[is.na(AUThemMtx)] <- 0 #we change NA to zero to be able to sum the columns
+
+
+# I create a matrix of zeros to add up the partial results.
 myTempMatrix <- data.frame(matrix(0,nUnqAU, ncol(AUThemMtx)))
 
 colnames(myTempMatrix) <- colnames(AUThemMtx)
 
-# iniciamos bucle de asignación
+# start allocation loop
 
 for(i in 1: nUnqAU){
   
-   # obtengo el indice donde estan los autores, con la funcion grepl encuentro los matching parciales entre los caracteres de la columna AU
+   # I get the index where the authors are, with the grepl function I find the partial matching between the characters of the AU column.
   idx <-  which(grepl(myAU[i],mapa_calor_AU$AU))
   
-  # tengo que sumar por columna cada una de las filas de idx
+  # I have to sum by column each row of idx
   
-  a <- AUThemMtx[c(idx),] # obtengo el subset referido al autor
-  aSum <- colSums(a)      # sumo todas las columnas
+  a <- AUThemMtx[c(idx),] # I get the subset referring to the author
+  aSum <- colSums(a)      # sum of all columns
   
-  # agrego el resultados a la fila que le corresponde al autor
+  # I add the results to the author's row
   myTempMatrix[i,] <- myTempMatrix[i,]+aSum 
   
 }
 
-# data frame con los autores unicos y los temas que han tratado
+# data frame with unique authors and the topics they have dealt with
 AU_Tema <- data.frame(myAU,myTempMatrix)
 
-#ordeno los temas por los cluster definidos, en cada nombre de tema he añadido alprincipio su numero de cluster de 1 a 5, asi al ordenarlos los agrupo por cluster
+#I order the topics by the defined clusters, in each topic name I have added, at the beginning, its cluster number from 1 to 5, so when I order them I group them by cluster.
 
-AU_Tema_ord <-AU_Tema[,2:20] # separo  las colomnas de los temas
+AU_Tema_ord <-AU_Tema[,2:20] # keep topic columns
 
 AU_Tema_ord <- AU_Tema_ord[,order(colnames(AU_Tema_ord))] # las ordeno por nombre del tema
 
@@ -942,7 +906,7 @@ AUThemMtx_ord <- AUThemMtx[,order(colnames(AUThemMtx))]
 
 ```
 
-Generamos los graficos para el análisis de autores
+We generate the graphs for author analysis
 
 ```{r AU graph}
 
@@ -951,11 +915,11 @@ data <- AU_Tema
 
 dataOrd <- AU_Tema_ord
 
-rownames(data) <- data[,1] # autores unicos como nombres de fila
+rownames(data) <- data[,1] # unique authors as row names
 rownames(dataOrd) <- dataOrd[,1]
 
 
-data <- data[,2:20] # 19 temas
+data <- data[,2:20] 
 dataOrd <- dataOrd[,2:20]
 
 
@@ -967,8 +931,7 @@ dataOrd.m<- as.matrix(dataOrd)
 
 
 
-# añadimos 5 columnas representando cada cluster para hacer el análisis por cluster en lugar de cluster
-# y familia.
+# We added 5 columns representing each cluster to do the analysis by cluster instead of cluster and family.
 
 dataOrd$C1 <- rowSums(dataOrd[,1:4])
 dataOrd$C2 <- rowSums(dataOrd[,5:8])
@@ -980,19 +943,12 @@ dataOrd$C5 <- rowSums(dataOrd[,16:19])
 au_clust <- dataOrd[,20:24]
 au_clust.m <- as.matrix(au_clust)
 
-#exporto los datos de autores x cluster para graficar. nos sirve para identificar y contar los autores
-# especializados en cada cluster
-write.csv(au_clust.m,file="C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/au_clust.csv")
-
-
-
-
-# graficamos la relacion entre autores y clusters
+# we plot the relationship between authors and clusters
 library(igraph)
 
 
 
-# grafico de network entre autores y clusters
+# network chart between authors and clusters
 net <- graph_from_incidence_matrix(au_clust.m)
 
 V(net)$color <- ifelse(V(net)$type, "lightblue", "salmon")
@@ -1006,7 +962,7 @@ plot(net, vertex.size=10, vertex.label.color="black",
      main="Author relations with Cluster")
 
 
-# heatmap con familias/clusters y autores
+# heatmap with families/clusters and authors
 
 par(cex.main=1, cex.lab=0.7,cex.axis=2)
 
@@ -1030,38 +986,32 @@ heatmap.2(t(dataOrd.m),
 
 ### heatmap top 20 autores
 
-como tenemos tantos autores el grafico no muestra muy bien la
-concentracion de autores/temas. Vamos a volver a hacer el heatmap pero
-solo para los 20 top AU. necesito sacar los top 20 autores de los
-resutlados de bibliometrix
+as we have so many authors, the graph does not show very well the
+concentration of authors/topics. Let's redo the heatmap but only for the top 20 AU.
+I need to get the top 20 authors from the bibliometrix results.
+
 
 ```{r 20TopAU heatmap}
 
 library(bipartite)
 
-# importo los 20 top autores, deberia generarlos con la funcion Hindex del paquete bibliometrix, pero por ahroa los importo del excel (los he obtenido con el biblioshiny)
+# I import the top 20 authors, I could generate them with the Hindex function of the bibliometrix package, but for now I import them from excel (I got them with biblioshiny).
 
-top20AU <- read_excel("C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/top20AU.xlsx")
+top20AU <- read_excel("yout path/top20AU.xlsx")
 
 myTop20AU_Tema <- AU_Tema_ord[AU_Tema_ord$myAU %in% top20AU$Author,]
-
-#exporto los datos de autores con absrtacts
-write.csv(myTop20AU_Tema,file="C:/Users/hrico/OneDrive - Universidad de Oviedo/1.1 Herramienta analisis bibliometrico/auTopwithAB.csv")
 
 
 data20 <- myTop20AU_Tema
 
-rownames(data20) <- data20[,1] # autores unicos como nombres de fila
+rownames(data20) <- data20[,1] 
 
 
-data20 <- data20[,2:20] # 19 temas
+data20 <- data20[,2:20]
 
 colnames(data20) <- colnames(AUThemMtx_ord)
 
-# data20 <- as.matrix(data20)
 
-# añadimos 5 columnas representando cada cluster para hacer el análisis por cluster en lugar de cluster
-# y familia.
 
 data20$C1 <- rowSums(data20[,1:4])
 data20$C2 <- rowSums(data20[,5:8])
@@ -1075,12 +1025,12 @@ au20_clust.m <- as.matrix(au20_clust)
 
 
 
-# graficamos la relacion entre autores y clusters
+# we plot the relationship between authors and clusters
 
 plotweb(au20_clust.m, labsize = 1, arrow = "no", col.interaction = "lightblue", 
         col.high = "tomato", col.low = "grey80" )
 
-# calculamos los modulos
+# calculating the modules
 mod20 <- computeModules(au20_clust.m)
 pp <- plotModuleWeb(mod20)
 
@@ -1102,8 +1052,5 @@ heatmap.2(t(au20_clust.m),
         ylab="",
         main="heatmap 20 AU/Theme"
         )
-
-
-
 
 ```
